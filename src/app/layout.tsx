@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Providers } from "@/components/providers";
+import { ThemeToggle } from "@/components/theme-toggle";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -21,13 +22,14 @@ export default function RootLayout({
             <header className="border-b">
               <div className="container mx-auto px-4 py-3 flex items-center justify-between">
                 <h1 className="text-xl font-semibold">Conduit Monitor</h1>
-                <nav className="flex gap-4">
+                <nav className="flex items-center gap-4">
                   <Link href="/" className="text-sm hover:underline">
                     Dashboard
                   </Link>
                   <Link href="/servers" className="text-sm hover:underline">
                     Servers
                   </Link>
+                  <ThemeToggle />
                 </nav>
               </div>
             </header>
