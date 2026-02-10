@@ -22,15 +22,15 @@ export function ServerCard({ server }: { server: ServerSafe }) {
         totalCpu: data.containers.reduce((s, c) => s + c.cpu_percent, 0),
         totalMem: data.containers.reduce((s, c) => s + c.memory_mb, 0),
         totalConns: data.containers.reduce(
-          (s, c) => s + (c.app_metrics?.connections ?? 0),
+          (s, c) => s + (c.app_metrics?.connected_clients ?? 0),
           0
         ),
         totalTrafficIn: data.containers.reduce(
-          (s, c) => s + (c.app_metrics?.traffic_in ?? 0),
+          (s, c) => s + (c.app_metrics?.bytes_downloaded ?? 0),
           0
         ),
         totalTrafficOut: data.containers.reduce(
-          (s, c) => s + (c.app_metrics?.traffic_out ?? 0),
+          (s, c) => s + (c.app_metrics?.bytes_uploaded ?? 0),
           0
         ),
       }

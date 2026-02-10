@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import db from "@/lib/db";
-import { AGENT_TIMEOUT_MS, STALE_THRESHOLD_S } from "@/lib/constants";
+import { AGENT_TIMEOUT_MS, STALE_THRESHOLD_S, METRICS_RETENTION_HOURS } from "@/lib/constants";
+import { storeSnapshot, cleanup } from "@/lib/metrics-store";
 import type { ServerRow, AgentStatusResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -55,6 +56,22 @@ export async function GET(
         data.server_id,
         id
       );
+    }
+
+    // Store metrics snapshot for history
+    try {
+      storeSnapshot(id, data);
+    } catch {
+      // Don't fail the request if storage fails
+    }
+
+    // Probabilistic cleanup (~5% of requests)
+    if (Math.random() < 0.05) {
+      try {
+        cleanup(METRICS_RETENTION_HOURS);
+      } catch {
+        // Ignore cleanup errors
+      }
     }
 
     const nowEpoch = Math.floor(Date.now() / 1000);

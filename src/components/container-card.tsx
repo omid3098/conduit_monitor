@@ -56,16 +56,16 @@ export function ContainerCard({ container }: { container: AgentContainer }) {
           {container.app_metrics ? (
             <>
               <MetricDisplay
-                label="Connections"
-                value={container.app_metrics.connections.toString()}
+                label="Clients"
+                value={container.app_metrics.connected_clients.toString()}
               />
               <MetricDisplay
-                label="Traffic In"
-                value={formatBytes(container.app_metrics.traffic_in)}
+                label="Upload"
+                value={formatBytes(container.app_metrics.bytes_uploaded)}
               />
               <MetricDisplay
-                label="Traffic Out"
-                value={formatBytes(container.app_metrics.traffic_out)}
+                label="Download"
+                value={formatBytes(container.app_metrics.bytes_downloaded)}
               />
             </>
           ) : (

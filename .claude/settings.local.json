@@ -1,0 +1,32 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Read(//d/w/**)",
+      "Bash(powershell -Command:*)",
+      "WebFetch(domain:ui.shadcn.com)",
+      "Bash(npx create-next-app@latest:*)",
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn@latest add button card badge input label dialog table skeleton separator -y)",
+      "Bash(npx next build:*)",
+      "Bash(npx next:*)",
+      "Bash(node -e:*)",
+      "Bash(node --version:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(node test-agent.js:*)",
+      "Bash(powershell -File - << 'PWSH'\n$body = '{\"uri\": \"conduit://testsecret@localhost:9090\", \"label\": \"Test Server\"}'\n$response = Invoke-WebRequest -Uri 'http://localhost:3101/api/servers' -Method POST -Body $body -ContentType 'application/json' -UseBasicParsing\nWrite-Output $response.Content\nPWSH)",
+      "Bash(powershell -File -:*)",
+      "Bash(git init:*)",
+      "Bash(git status:*)",
+      "Bash(git config:*)",
+      "Bash(npx shadcn@latest add:*)",
+      "Bash(if not exist \"d:\\\\w\\\\conduit_monitor\\\\src\\\\app\\\\api\\\\servers\\\\[id]\\\\history\" mkdir \"d:\\\\w\\\\conduit_monitor\\\\src\\\\app\\\\api\\\\servers\\\\[id]\\\\history\")",
+      "Bash(ls \"d:\\\\w\\\\conduit_monitor\\\\src\\\\components\\\\charts\"\" 2>/dev/null && echo \"--- charts exist ---\" && ls \"d:wconduit_monitorsrccomponentsserver-detail\"\")",
+      "Bash(npx tsc:*)",
+      "Bash(npm run build:*)"
+    ]
+  }
+}
