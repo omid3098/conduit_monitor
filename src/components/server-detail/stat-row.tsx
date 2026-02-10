@@ -7,6 +7,7 @@ import {
   formatCpu,
   formatPercent,
   formatMemory,
+  formatBytes,
 } from "@/lib/format";
 import type { ServerStatusResult, MetricsDataPoint } from "@/lib/types";
 
@@ -38,6 +39,8 @@ export function StatRow({ data, sparklineData }: StatRowProps) {
   const cpuPct = data.system?.cpu_percent ?? 0;
   const memUsed = data.system?.memory_used_mb ?? 0;
   const memTotal = data.system?.memory_total_mb ?? 1;
+  const sessionUp = data.session?.total_upload_bytes ?? 0;
+  const sessionDown = data.session?.total_download_bytes ?? 0;
   const diskUsed = data.system?.disk_used_gb ?? 0;
   const diskTotal = data.system?.disk_total_gb ?? 1;
 
@@ -45,7 +48,7 @@ export function StatRow({ data, sparklineData }: StatRowProps) {
   const diskPct = (diskUsed / diskTotal) * 100;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       <StatPanel
         label="Clients"
         value={formatCompact(totalClients)}
@@ -58,6 +61,12 @@ export function StatRow({ data, sparklineData }: StatRowProps) {
         value={formatMbps(netIn + netOut)}
         subtitle={`In ${formatMbps(netIn)} / Out ${formatMbps(netOut)}`}
         sparklineData={netSpark}
+        color="var(--color-chart-2)"
+      />
+      <StatPanel
+        label="Session"
+        value={formatBytes(sessionUp + sessionDown)}
+        subtitle={`↑${formatBytes(sessionUp)} / ↓${formatBytes(sessionDown)}`}
         color="var(--color-chart-2)"
       />
       <StatPanel

@@ -8,6 +8,8 @@ const RANGE_MAP: Record<string, number> = {
   "1h": 3600,
   "6h": 21600,
   "24h": 86400,
+  "30d": 2592000,
+  "all": 0,
 };
 
 export async function GET(
@@ -25,7 +27,7 @@ export async function GET(
   }
 
   const range = request.nextUrl.searchParams.get("range") || "1h";
-  const rangeSeconds = RANGE_MAP[range] || RANGE_MAP["1h"];
+  const rangeSeconds = RANGE_MAP[range] ?? RANGE_MAP["1h"];
 
   const history = getHistory(id, rangeSeconds);
 

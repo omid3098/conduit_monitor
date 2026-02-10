@@ -9,29 +9,43 @@ const RANGE_MAP: Record<string, number> = {
   "1h": 3600,
   "6h": 21600,
   "24h": 86400,
+  "30d": 2592000,
+  "all": 0,
 };
 
-const BUCKET_SIZE = 30; // seconds — aligns slightly offset polling times
+function bucketSizeForRange(rangeSeconds: number): number {
+  if (rangeSeconds === 0) return 900;     // all-time: 15 min buckets
+  if (rangeSeconds > 86400) return 300;   // >24h: 5 min buckets
+  return 30;                              // ≤24h: 30s buckets
+}
 
 export async function GET(request: NextRequest) {
   const range = request.nextUrl.searchParams.get("range") || "1h";
-  const rangeSeconds = RANGE_MAP[range] || RANGE_MAP["1h"];
-  const since = Math.floor(Date.now() / 1000) - rangeSeconds;
+  const rangeSeconds = RANGE_MAP[range] ?? RANGE_MAP["1h"];
+  const since = rangeSeconds > 0
+    ? Math.floor(Date.now() / 1000) - rangeSeconds
+    : 0;
 
-  const rows = db
-    .prepare(
-      `SELECT data_json FROM metrics_history
-       WHERE timestamp >= ?
-       ORDER BY timestamp ASC`
-    )
-    .all(since) as { data_json: string }[];
+  const rows = (since > 0
+    ? db.prepare(
+        `SELECT data_json FROM metrics_history
+         WHERE timestamp >= ?
+         ORDER BY timestamp ASC`
+      ).all(since)
+    : db.prepare(
+        `SELECT data_json FROM metrics_history
+         ORDER BY timestamp ASC`
+      ).all()
+  ) as { data_json: string }[];
+
+  const bucketSize = bucketSizeForRange(rangeSeconds);
 
   // Group by timestamp bucket
   const buckets = new Map<number, MetricsDataPoint[]>();
 
   for (const row of rows) {
     const point = JSON.parse(row.data_json) as MetricsDataPoint;
-    const key = Math.floor(point.timestamp / BUCKET_SIZE) * BUCKET_SIZE;
+    const key = Math.floor(point.timestamp / bucketSize) * bucketSize;
     const arr = buckets.get(key);
     if (arr) arr.push(point);
     else buckets.set(key, [point]);

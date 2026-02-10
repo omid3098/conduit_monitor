@@ -8,7 +8,15 @@ interface TimeRangeSelectorProps {
   onChange: (range: TimeRange) => void;
 }
 
-const ranges: TimeRange[] = ["1h", "6h", "24h"];
+const ranges: TimeRange[] = ["1h", "6h", "24h", "30d", "all"];
+
+const rangeLabels: Record<TimeRange, string> = {
+  "1h": "1h",
+  "6h": "6h",
+  "24h": "24h",
+  "30d": "30d",
+  "all": "All",
+};
 
 export function TimeRangeSelector({ value, onChange }: TimeRangeSelectorProps) {
   return (
@@ -20,7 +28,7 @@ export function TimeRangeSelector({ value, onChange }: TimeRangeSelectorProps) {
           size="sm"
           onClick={() => onChange(range)}
         >
-          {range}
+          {rangeLabels[range]}
         </Button>
       ))}
     </div>

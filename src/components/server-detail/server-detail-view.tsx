@@ -37,11 +37,14 @@ function LoadingSkeleton() {
       <Skeleton className="h-8 w-40" />
 
       {/* Stat panels skeleton */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        {Array.from({ length: 5 }).map((_, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} className="h-[100px] rounded-lg" />
         ))}
       </div>
+
+      {/* Session strip skeleton */}
+      <Skeleton className="h-[60px] rounded-xl" />
 
       {/* Charts skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -114,7 +117,13 @@ export function ServerDetailView({ serverId }: ServerDetailViewProps) {
         <StatRow data={statusData} sparklineData={history} />
       )}
 
-      {/* 4. 2x2 chart grid */}
+      {/* 4. Session & settings strip */}
+      <SessionSettingsStrip
+        session={statusData?.session ?? null}
+        settings={statusData?.settings ?? null}
+      />
+
+      {/* 5. 2x2 chart grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ConnectionsChartPanel history={history} />
         <NetworkChartPanel history={history} />
@@ -125,17 +134,11 @@ export function ServerDetailView({ serverId }: ServerDetailViewProps) {
         />
       </div>
 
-      {/* 5. Country + TCP states */}
+      {/* 6. Country + TCP states */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <CountryPanel countries={statusData?.clients_by_country ?? []} />
         <TcpStatesPanel connections={statusData?.connections ?? null} />
       </div>
-
-      {/* 6. Session & settings strip */}
-      <SessionSettingsStrip
-        session={statusData?.session ?? null}
-        settings={statusData?.settings ?? null}
-      />
 
       {/* 7. Container list */}
       <ContainerList containers={statusData?.containers ?? []} />

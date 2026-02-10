@@ -37,15 +37,18 @@ export function getHistory(
   serverId: string,
   rangeSeconds: number
 ): MetricsDataPoint[] {
-  const since = Math.floor(Date.now() / 1000) - rangeSeconds;
-
-  const rows = db
-    .prepare(
-      `SELECT data_json FROM metrics_history
-       WHERE server_id = ? AND timestamp >= ?
-       ORDER BY timestamp ASC`
-    )
-    .all(serverId, since) as { data_json: string }[];
+  const rows = (rangeSeconds > 0
+    ? db.prepare(
+        `SELECT data_json FROM metrics_history
+         WHERE server_id = ? AND timestamp >= ?
+         ORDER BY timestamp ASC`
+      ).all(serverId, Math.floor(Date.now() / 1000) - rangeSeconds)
+    : db.prepare(
+        `SELECT data_json FROM metrics_history
+         WHERE server_id = ?
+         ORDER BY timestamp ASC`
+      ).all(serverId)
+  ) as { data_json: string }[];
 
   const points = rows.map((r) => JSON.parse(r.data_json) as MetricsDataPoint);
   return downsample(points, HISTORY_MAX_POINTS);

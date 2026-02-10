@@ -10,10 +10,10 @@ import {
 import {
   ChartContainer,
   ChartTooltip,
-  ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
 import type { AgentCountryClients } from "@/lib/types";
+import { formatCountryCode } from "@/lib/format";
 
 interface CountryPanelProps {
   countries: AgentCountryClients[];
@@ -26,10 +26,37 @@ const chartConfig: ChartConfig = {
   },
 };
 
+interface CountryDisplayItem {
+  country: string;
+  displayName: string;
+  connections: number;
+  percent: string;
+}
+
+function CountryTooltip({ active, payload }: { active?: boolean; payload?: Array<{ payload: CountryDisplayItem }> }) {
+  if (!active || !payload?.length) return null;
+  const item = payload[0].payload;
+  return (
+    <div className="rounded-lg border bg-background px-3 py-2 text-sm shadow-md">
+      <p className="font-medium">{item.displayName}</p>
+      <p className="text-muted-foreground">
+        {item.connections} connections ({item.percent}%)
+      </p>
+    </div>
+  );
+}
+
 export function CountryPanel({ countries }: CountryPanelProps) {
   const sorted = [...countries]
     .sort((a, b) => b.connections - a.connections)
     .slice(0, 8);
+
+  const total = sorted.reduce((s, c) => s + c.connections, 0);
+  const displayData: CountryDisplayItem[] = sorted.map((c) => ({
+    ...c,
+    displayName: formatCountryCode(c.country),
+    percent: total > 0 ? ((c.connections / total) * 100).toFixed(1) : "0",
+  }));
 
   return (
     <Card>
@@ -39,13 +66,13 @@ export function CountryPanel({ countries }: CountryPanelProps) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {sorted.length === 0 ? (
+        {displayData.length === 0 ? (
           <p className="text-sm text-muted-foreground py-4 text-center">
             No country data available
           </p>
         ) : (
           <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <BarChart data={sorted} layout="vertical">
+            <BarChart data={displayData} layout="vertical">
               <CartesianGrid
                 strokeDasharray="3 3"
                 className="stroke-border/50"
@@ -60,13 +87,13 @@ export function CountryPanel({ countries }: CountryPanelProps) {
               />
               <YAxis
                 type="category"
-                dataKey="country"
+                dataKey="displayName"
                 tick={{ fontSize: 11 }}
                 tickLine={false}
                 axisLine={false}
-                width={40}
+                width={80}
               />
-              <ChartTooltip content={<ChartTooltipContent />} />
+              <ChartTooltip content={<CountryTooltip />} />
               <Bar
                 dataKey="connections"
                 fill="var(--color-connections)"

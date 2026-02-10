@@ -3,7 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 import type { MetricsHistoryResponse } from "@/lib/types";
 
-export type TimeRange = "1h" | "6h" | "24h";
+export type TimeRange = "1h" | "6h" | "24h" | "30d" | "all";
 
 export function useServerHistory(serverId: string, range: TimeRange = "1h") {
   return useQuery<MetricsHistoryResponse>({

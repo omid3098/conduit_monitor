@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useServerStatus } from "@/hooks/use-server-status";
 import type { ServerSafe, ServerConnectionState } from "@/lib/types";
-import { formatCpu } from "@/lib/format";
+import { formatCpu, formatBytes } from "@/lib/format";
 
 const statusDotColors: Record<ServerConnectionState, string> = {
   online: "bg-emerald-500",
@@ -47,6 +47,12 @@ export function CompactServerCard({ server }: { server: ServerSafe }) {
   const isUp = connectionState === "online" || connectionState === "stale";
   const connected = data?.connected_clients ?? 0;
   const connecting = data?.connecting_clients ?? 0;
+  const maxClients = (data?.settings?.max_clients ?? 0) > 0
+    ? data!.settings!.max_clients
+    : (data?.containers?.reduce((s, c) => s + (c.settings?.max_clients ?? 0), 0) ?? 0);
+  const containers = data?.total_containers ?? 0;
+  const sessionUp = data?.session?.total_upload_bytes ?? 0;
+  const sessionDown = data?.session?.total_download_bytes ?? 0;
   const cpuPct = data?.system?.cpu_percent ?? 0;
   const memPct =
     data?.system && data.system.memory_total_mb > 0
@@ -69,10 +75,15 @@ export function CompactServerCard({ server }: { server: ServerSafe }) {
         ) : isUp && data ? (
           <>
             {/* Client counts */}
-            <div className="flex items-baseline gap-1.5 mb-2">
+            <div className="flex items-baseline gap-1.5 mb-1">
               <span className="text-2xl font-bold tabular-nums">
                 {connected}
               </span>
+              {maxClients > 0 && (
+                <span className="text-sm text-muted-foreground tabular-nums">
+                  /{maxClients}
+                </span>
+              )}
               <span className="text-xs text-muted-foreground">connected</span>
               {connecting > 0 && (
                 <>
@@ -84,6 +95,14 @@ export function CompactServerCard({ server }: { server: ServerSafe }) {
                   </span>
                 </>
               )}
+            </div>
+
+            {/* Session traffic + containers */}
+            <div className="flex items-center gap-1.5 mb-2 text-[10px] text-muted-foreground tabular-nums">
+              <span>{containers}C</span>
+              <span className="text-border">|</span>
+              <span>↑{formatBytes(sessionUp)}</span>
+              <span>↓{formatBytes(sessionDown)}</span>
             </div>
 
             {/* Health bars */}
