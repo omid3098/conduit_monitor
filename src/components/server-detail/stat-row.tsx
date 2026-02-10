@@ -32,7 +32,7 @@ export function StatRow({ data, sparklineData }: StatRowProps) {
       : 0
   );
 
-  const totalClients = data.connections?.total ?? 0;
+  const totalClients = (data.connected_clients ?? 0) + (data.connecting_clients ?? 0);
   const netIn = data.system?.net_in_mbps ?? 0;
   const netOut = data.system?.net_out_mbps ?? 0;
   const cpuPct = data.system?.cpu_percent ?? 0;
@@ -49,7 +49,7 @@ export function StatRow({ data, sparklineData }: StatRowProps) {
       <StatPanel
         label="Clients"
         value={formatCompact(totalClients)}
-        subtitle={`${data.connections?.unique_ips ?? 0} unique`}
+        subtitle={`${data.connected_clients ?? 0} connected, ${data.connecting_clients ?? 0} connecting`}
         sparklineData={connSpark}
         color="var(--color-chart-1)"
       />

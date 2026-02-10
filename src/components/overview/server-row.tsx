@@ -142,7 +142,7 @@ export function ServerRow({ server }: { server: ServerSafe }) {
 
   useEffect(() => {
     if (data) {
-      const connections = data.connections?.total ?? 0;
+      const connections = (data.connected_clients ?? 0) + (data.connecting_clients ?? 0);
       const cpu = data.system?.cpu_percent ?? 0;
       historyRef.current = [
         ...historyRef.current.slice(-19),
@@ -184,17 +184,15 @@ export function ServerRow({ server }: { server: ServerSafe }) {
                   Clients
                 </span>
                 <div className="text-xl font-bold tabular-nums">
-                  {data.connections?.total ?? 0}
+                  {(data.connected_clients ?? 0) + (data.connecting_clients ?? 0)}
                 </div>
                 <MiniSparkline
                   data={historyRef.current.map((h) => h.connections)}
                   color="hsl(var(--chart-1))"
                 />
-                {data.session && (
-                  <span className="text-[10px] text-muted-foreground">
-                    peak: {data.session.peak_connections}
-                  </span>
-                )}
+                <span className="text-[10px] text-muted-foreground">
+                  {data.connected_clients ?? 0} conn, {data.connecting_clients ?? 0} connecting
+                </span>
               </div>
 
               {/* Traffic stat panel */}

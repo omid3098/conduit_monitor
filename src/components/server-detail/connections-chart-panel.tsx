@@ -77,7 +77,11 @@ export function ConnectionsChartPanel({ history }: ConnectionsChartPanelProps) {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => formatTime(value as number)}
+                  labelFormatter={(value) => {
+                    const ts = typeof value === "number" ? value : Number(value);
+                    if (isNaN(ts) || ts === 0) return "";
+                    return formatTime(ts);
+                  }}
                 />
               }
             />

@@ -34,6 +34,8 @@ function makeStatus() {
     server_id: "test-server-01",
     timestamp: now,
     total_containers: 2,
+    connected_clients: c1Connected + c2Connected,
+    connecting_clients: c1Connecting + c2Connecting,
 
     system: {
       cpu_percent: rand(40, 98),

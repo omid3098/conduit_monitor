@@ -43,7 +43,7 @@ export function AggregateStats({
   const offlineCount = totalServers - onlineCount;
 
   const totalClients = online.reduce(
-    (s, d) => s + (d.data?.connections?.total ?? 0),
+    (s, d) => s + (d.data?.connected_clients ?? 0) + (d.data?.connecting_clients ?? 0),
     0
   );
 

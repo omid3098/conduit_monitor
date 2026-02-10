@@ -77,8 +77,15 @@ export function NetworkChartPanel({ history }: NetworkChartPanelProps) {
             <ChartTooltip
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => formatTime(value as number)}
-                  formatter={(value) => [`${Number(value).toFixed(1)} Mbps`]}
+                  labelFormatter={(value) => {
+                    const ts = typeof value === "number" ? value : Number(value);
+                    if (isNaN(ts) || ts === 0) return "";
+                    return formatTime(ts);
+                  }}
+                  formatter={(value, name) => [
+                    `${Number(value).toFixed(1)} Mbps`,
+                    chartConfig[name as keyof typeof chartConfig]?.label ?? name,
+                  ]}
                 />
               }
             />

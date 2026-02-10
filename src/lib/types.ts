@@ -80,6 +80,8 @@ export interface AgentStatusResponse {
   server_id: string;
   timestamp: number;
   total_containers: number;
+  connected_clients: number;
+  connecting_clients: number;
   system: AgentSystemMetrics | null;
   settings: AgentSettings | null;
   session: AgentSession | null;
