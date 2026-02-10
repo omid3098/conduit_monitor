@@ -1,11 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import { useServers } from "@/hooks/use-servers";
 import { useServerStatus } from "@/hooks/use-server-status";
+import { useAggregatedHistory } from "@/hooks/use-aggregated-history";
 import { AggregateStats } from "@/components/overview/aggregate-stats";
-import { ServerRow } from "@/components/overview/server-row";
+import { CompactServerCard } from "@/components/overview/compact-server-card";
+import { CombinedCountryPanel } from "@/components/overview/combined-country-panel";
+import { TimeRangeSelector } from "@/components/server-detail/time-range-selector";
+import { ConnectionsChartPanel } from "@/components/server-detail/connections-chart-panel";
+import { NetworkChartPanel } from "@/components/server-detail/network-chart-panel";
+import { SystemChartPanel } from "@/components/server-detail/system-chart-panel";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { ServerSafe, ServerStatusResult, ServerConnectionState } from "@/lib/types";
+import type {
+  ServerSafe,
+  ServerStatusResult,
+  ServerConnectionState,
+} from "@/lib/types";
+import type { TimeRange } from "@/hooks/use-server-history";
 
 function ServerStatusCollector({
   servers,
@@ -19,8 +31,6 @@ function ServerStatusCollector({
     }>
   ) => React.ReactNode;
 }) {
-  // We need to call hooks for each server at top level
-  // This component acts as a hook collector
   const results = servers.map((s) => {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const { data, connectionState } = useServerStatus(s.id);
@@ -31,18 +41,27 @@ function ServerStatusCollector({
 
 export function OverviewDashboard() {
   const { data: servers, isLoading } = useServers();
+  const [timeRange, setTimeRange] = useState<TimeRange>("1h");
+  const aggregatedHistoryQuery = useAggregatedHistory(timeRange);
 
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="grid grid-cols-4 gap-3">
-          {[1, 2, 3, 4].map((i) => (
+      <div className="space-y-6">
+        <div className="grid grid-cols-5 gap-3">
+          {[1, 2, 3, 4, 5].map((i) => (
             <Skeleton key={i} className="h-20 rounded-lg" />
           ))}
         </div>
-        {[1, 2].map((i) => (
-          <Skeleton key={i} className="h-32 rounded-lg" />
-        ))}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-32 rounded-lg" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-[320px] rounded-xl" />
+          ))}
+        </div>
       </div>
     );
   }
@@ -62,15 +81,36 @@ export function OverviewDashboard() {
     );
   }
 
+  const history = aggregatedHistoryQuery.data?.history ?? [];
+
   return (
     <ServerStatusCollector servers={servers}>
       {(serversData) => (
-        <div className="space-y-4">
+        <div className="space-y-6">
+          {/* 1. Aggregate stats */}
           <AggregateStats serversData={serversData} />
-          <div className="space-y-3">
+
+          {/* 2. Compact server cards grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {servers.map((server) => (
-              <ServerRow key={server.id} server={server} />
+              <CompactServerCard key={server.id} server={server} />
             ))}
+          </div>
+
+          {/* 3. Combined metrics header + time range */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+              Combined Metrics
+            </h2>
+            <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
+          </div>
+
+          {/* 4. Combined charts (2x2 grid) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <ConnectionsChartPanel history={history} />
+            <NetworkChartPanel history={history} />
+            <SystemChartPanel history={history} />
+            <CombinedCountryPanel serversData={serversData} />
           </div>
         </div>
       )}

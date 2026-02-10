@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { useServers, useDeleteServer } from "@/hooks/use-servers";
+import { useState, useRef, useEffect } from "react";
+import { useServers, useDeleteServer, useRenameServer } from "@/hooks/use-servers";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Table,
   TableBody,
@@ -18,6 +19,67 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+
+function EditableLabel({
+  serverId,
+  currentLabel,
+}: {
+  serverId: string;
+  currentLabel: string | null;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [value, setValue] = useState(currentLabel ?? "");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const renameServer = useRenameServer();
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editing]);
+
+  const save = async () => {
+    const trimmed = value.trim();
+    if (trimmed !== (currentLabel ?? "")) {
+      await renameServer.mutateAsync({ id: serverId, label: trimmed });
+    }
+    setEditing(false);
+  };
+
+  if (editing) {
+    return (
+      <Input
+        ref={inputRef}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onBlur={save}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") save();
+          if (e.key === "Escape") {
+            setValue(currentLabel ?? "");
+            setEditing(false);
+          }
+        }}
+        className="h-7 w-48"
+        disabled={renameServer.isPending}
+      />
+    );
+  }
+
+  return (
+    <button
+      onClick={() => {
+        setValue(currentLabel ?? "");
+        setEditing(true);
+      }}
+      className="text-left hover:underline cursor-pointer"
+      title="Click to rename"
+    >
+      {currentLabel || "—"}
+    </button>
+  );
+}
 
 export function ServerList() {
   const { data: servers, isLoading } = useServers();
@@ -48,7 +110,12 @@ export function ServerList() {
         <TableBody>
           {servers.map((server) => (
             <TableRow key={server.id}>
-              <TableCell>{server.label || "—"}</TableCell>
+              <TableCell>
+                <EditableLabel
+                  serverId={server.id}
+                  currentLabel={server.label}
+                />
+              </TableCell>
               <TableCell className="font-mono text-sm">
                 {server.server_id || "Unknown"}
               </TableCell>

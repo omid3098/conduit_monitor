@@ -37,6 +37,25 @@ export function useAddServer() {
   });
 }
 
+export function useRenameServer() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, label }: { id: string; label: string }) => {
+      const res = await fetch(`/api/servers/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ label }),
+      });
+      if (!res.ok) throw new Error("Failed to rename server");
+      return res.json() as Promise<ServerSafe>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["servers"] });
+    },
+  });
+}
+
 export function useDeleteServer() {
   const queryClient = useQueryClient();
 

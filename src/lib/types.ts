@@ -147,3 +147,9 @@ export interface MetricsHistoryResponse {
   data_points: number;
   history: MetricsDataPoint[];
 }
+
+export interface AggregatedHistoryResponse {
+  range: string;
+  data_points: number;
+  history: MetricsDataPoint[];
+}

@@ -42,8 +42,12 @@ export function AggregateStats({
   const onlineCount = online.length;
   const offlineCount = totalServers - onlineCount;
 
-  const totalClients = online.reduce(
-    (s, d) => s + (d.data?.connected_clients ?? 0) + (d.data?.connecting_clients ?? 0),
+  const totalConnected = online.reduce(
+    (s, d) => s + (d.data?.connected_clients ?? 0),
+    0
+  );
+  const totalConnecting = online.reduce(
+    (s, d) => s + (d.data?.connecting_clients ?? 0),
     0
   );
 
@@ -63,13 +67,22 @@ export function AggregateStats({
       : 0;
 
   return (
-    <div className="grid grid-cols-4 gap-3">
+    <div className="grid grid-cols-5 gap-3">
       <StatCard
         label="Servers"
         value={totalServers.toString()}
         subtitle={`${onlineCount} online${offlineCount > 0 ? ` · ${offlineCount} offline` : ""}`}
       />
-      <StatCard label="Total Clients" value={totalClients.toString()} />
+      <StatCard
+        label="Connected"
+        value={totalConnected.toString()}
+        subtitle="active clients"
+      />
+      <StatCard
+        label="Connecting"
+        value={totalConnecting.toString()}
+        subtitle="in progress"
+      />
       <StatCard
         label="Aggregate Traffic"
         value={`↑${formatMbps(totalNetOut)}`}
