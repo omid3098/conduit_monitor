@@ -35,7 +35,8 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "Bash(git clone:*)",
-      "Bash(go vet:*)"
+      "Bash(go vet:*)",
+      "Bash(set GOOS=linux:*)"
     ]
   }
 }

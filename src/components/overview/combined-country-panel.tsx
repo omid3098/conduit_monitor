@@ -12,10 +12,12 @@ interface CombinedCountryPanelProps {
     data: ServerStatusResult | undefined;
     connectionState: ServerConnectionState;
   }>;
+  compact?: boolean;
 }
 
 export function CombinedCountryPanel({
   serversData,
+  compact,
 }: CombinedCountryPanelProps) {
   const countryMap = new Map<string, number>();
   for (const server of serversData) {
@@ -36,5 +38,5 @@ export function CombinedCountryPanel({
     .map(([country, connections]) => ({ country, connections }))
     .sort((a, b) => b.connections - a.connections);
 
-  return <CountryPanel countries={merged} />;
+  return <CountryPanel countries={merged} compact={compact} />;
 }

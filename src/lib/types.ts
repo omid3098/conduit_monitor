@@ -19,6 +19,9 @@ export interface AgentSettings {
   max_clients: number;
   bandwidth_limit_mbps: number;
   auto_start: boolean;
+  container_count?: number;
+  snowflake_enabled?: boolean;
+  snowflake_count?: number;
 }
 
 export interface AgentSession {
@@ -38,6 +41,19 @@ export interface AgentConnections {
 export interface AgentCountryClients {
   country: string;
   connections: number;
+}
+
+export interface AgentCountryTraffic {
+  country: string;
+  from_bytes: number;
+  to_bytes: number;
+}
+
+export interface AgentSnowflakeMetrics {
+  total_connections: number;
+  timeouts_total: number;
+  inbound_bytes: number;
+  outbound_bytes: number;
 }
 
 export interface AgentContainerHealth {
@@ -87,7 +103,10 @@ export interface AgentStatusResponse {
   session: AgentSession | null;
   connections: AgentConnections | null;
   clients_by_country: AgentCountryClients[];
+  traffic_by_country?: AgentCountryTraffic[];
+  snowflake?: AgentSnowflakeMetrics | null;
   containers: AgentContainer[];
+  cm_available?: boolean;
 }
 
 // === Database row type ===

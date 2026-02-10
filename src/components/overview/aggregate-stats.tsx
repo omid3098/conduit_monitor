@@ -8,7 +8,7 @@ interface ServerData {
   connectionState: ServerConnectionState;
 }
 
-function StatCard({
+function MiniStat({
   label,
   value,
   subtitle,
@@ -18,35 +18,17 @@ function StatCard({
   subtitle?: string;
 }) {
   return (
-    <div className="rounded-lg border bg-card px-4 py-3">
-      <span className="text-[10px] uppercase text-muted-foreground">
+    <div className="flex-1 min-w-0 text-center px-2 py-1.5">
+      <div className="text-base font-bold tabular-nums leading-tight truncate">
+        {value}
+      </div>
+      <div className="text-[10px] uppercase text-muted-foreground leading-tight">
         {label}
-      </span>
-      <div className="text-2xl font-bold tabular-nums mt-0.5">{value}</div>
+      </div>
       {subtitle && (
-        <span className="text-xs text-muted-foreground">{subtitle}</span>
-      )}
-    </div>
-  );
-}
-
-function SmallStatCard({
-  label,
-  value,
-  subtitle,
-}: {
-  label: string;
-  value: string;
-  subtitle?: string;
-}) {
-  return (
-    <div className="rounded-lg border bg-card/50 px-3 py-2">
-      <span className="text-[10px] uppercase text-muted-foreground">
-        {label}
-      </span>
-      <div className="text-lg font-semibold tabular-nums mt-0.5">{value}</div>
-      {subtitle && (
-        <span className="text-[11px] text-muted-foreground">{subtitle}</span>
+        <div className="text-[9px] text-muted-foreground/70 leading-tight truncate">
+          {subtitle}
+        </div>
       )}
     </div>
   );
@@ -109,47 +91,43 @@ export function AggregateStats({
   }, 0);
 
   return (
-    <div className="space-y-2">
-      <div className="grid grid-cols-5 gap-3">
-        <StatCard
-          label="Servers"
-          value={totalServers.toString()}
-          subtitle={`${onlineCount} online${offlineCount > 0 ? ` · ${offlineCount} offline` : ""}`}
-        />
-        <StatCard
-          label="Connected"
-          value={totalConnected.toString()}
-          subtitle="active clients"
-        />
-        <StatCard
-          label="Connecting"
-          value={totalConnecting.toString()}
-          subtitle="in progress"
-        />
-        <StatCard
-          label="Aggregate Traffic"
-          value={`↑${formatMbps(totalNetOut)}`}
-          subtitle={`↓${formatMbps(totalNetIn)}`}
-        />
-        <StatCard label="Avg Host CPU" value={formatCpu(avgCpu)} />
-      </div>
-      <div className="grid grid-cols-3 gap-2">
-        <SmallStatCard
-          label="Session Traffic"
-          value={formatBytes(totalSessionUpload + totalSessionDownload)}
-          subtitle={`↑${formatBytes(totalSessionUpload)} ↓${formatBytes(totalSessionDownload)}`}
-        />
-        <SmallStatCard
-          label="Containers"
-          value={totalContainers.toString()}
-          subtitle="running"
-        />
-        <SmallStatCard
-          label="Max Clients"
-          value={totalMaxClients > 0 ? formatCompact(totalMaxClients) : "--"}
-          subtitle="capacity"
-        />
-      </div>
+    <div className="flex items-center rounded-lg border bg-card divide-x divide-border/50">
+      <MiniStat
+        label="Servers"
+        value={totalServers.toString()}
+        subtitle={`${onlineCount} on${offlineCount > 0 ? ` · ${offlineCount} off` : ""}`}
+      />
+      <MiniStat
+        label="Connected"
+        value={totalConnected.toString()}
+        subtitle="active clients"
+      />
+      <MiniStat
+        label="Connecting"
+        value={totalConnecting.toString()}
+        subtitle="in progress"
+      />
+      <MiniStat
+        label="Traffic"
+        value={`↑${formatMbps(totalNetOut)}`}
+        subtitle={`↓${formatMbps(totalNetIn)}`}
+      />
+      <MiniStat label="Avg CPU" value={formatCpu(avgCpu)} />
+      <MiniStat
+        label="Session"
+        value={formatBytes(totalSessionUpload + totalSessionDownload)}
+        subtitle={`↑${formatBytes(totalSessionUpload)} ↓${formatBytes(totalSessionDownload)}`}
+      />
+      <MiniStat
+        label="Containers"
+        value={totalContainers.toString()}
+        subtitle="running"
+      />
+      <MiniStat
+        label="Capacity"
+        value={totalMaxClients > 0 ? formatCompact(totalMaxClients) : "--"}
+        subtitle="max clients"
+      />
     </div>
   );
 }
