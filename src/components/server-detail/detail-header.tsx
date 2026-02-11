@@ -11,6 +11,7 @@ interface DetailHeaderProps {
   serverId?: string;
   connectionState: ServerConnectionState;
   sessionUptime?: number;
+  lastSeenAt?: string | null;
 }
 
 export function DetailHeader({
@@ -18,6 +19,7 @@ export function DetailHeader({
   serverId,
   connectionState,
   sessionUptime,
+  lastSeenAt,
 }: DetailHeaderProps) {
   return (
     <div className="flex items-center gap-4 flex-wrap">
@@ -34,7 +36,7 @@ export function DetailHeader({
           <h1 className="text-2xl font-bold tracking-tight truncate">
             {serverName}
           </h1>
-          <StatusBadge state={connectionState} />
+          <StatusBadge state={connectionState} lastSeenAt={lastSeenAt} />
         </div>
 
         <div className="flex items-center gap-3 text-sm text-muted-foreground">

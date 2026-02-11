@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import db from "@/lib/db";
 import { AGENT_TIMEOUT_MS, STALE_THRESHOLD_S, METRICS_RETENTION_HOURS } from "@/lib/constants";
 import { storeSnapshot, cleanup } from "@/lib/metrics-store";
+import { initializeState, recordStatusResult } from "@/lib/uptime-store";
 import type { ServerRow, AgentStatusResponse } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -20,6 +21,8 @@ export async function GET(
     return Response.json({ error: "Server not found" }, { status: 404 });
   }
 
+  initializeState(id);
+
   const agentUrl = `http://${server.host}:${server.port}/status`;
 
   try {
@@ -35,27 +38,43 @@ export async function GET(
     clearTimeout(timeout);
 
     if (agentResponse.status === 401) {
-      return Response.json({ error: "auth_failed" }, { status: 401 });
+      recordStatusResult(id, false);
+      return Response.json(
+        { error: "auth_failed", last_seen_at: server.last_seen_at, first_seen_at: server.first_seen_at },
+        { status: 401 }
+      );
     }
 
     if (agentResponse.status === 503) {
-      return Response.json({ error: "starting_up" }, { status: 503 });
+      recordStatusResult(id, false);
+      return Response.json(
+        { error: "starting_up", last_seen_at: server.last_seen_at, first_seen_at: server.first_seen_at },
+        { status: 503 }
+      );
     }
 
     if (!agentResponse.ok) {
+      recordStatusResult(id, false);
       return Response.json(
-        { error: "agent_error", agentStatus: agentResponse.status },
+        { error: "agent_error", agentStatus: agentResponse.status, last_seen_at: server.last_seen_at, first_seen_at: server.first_seen_at },
         { status: 502 }
       );
     }
 
     const data = (await agentResponse.json()) as AgentStatusResponse;
 
+    recordStatusResult(id, true);
+
+    // Update server_id and last_seen_at/first_seen_at on successful fetch
+    const now = new Date().toISOString();
     if (data.server_id && data.server_id !== server.server_id) {
-      db.prepare("UPDATE servers SET server_id = ? WHERE id = ?").run(
-        data.server_id,
-        id
-      );
+      db.prepare(
+        "UPDATE servers SET server_id = ?, last_seen_at = ?, first_seen_at = COALESCE(first_seen_at, ?) WHERE id = ?"
+      ).run(data.server_id, now, now, id);
+    } else {
+      db.prepare(
+        "UPDATE servers SET last_seen_at = ?, first_seen_at = COALESCE(first_seen_at, ?) WHERE id = ?"
+      ).run(now, now, id);
     }
 
     // Store metrics snapshot for history
@@ -79,9 +98,16 @@ export async function GET(
 
     return Response.json({ ...data, stale });
   } catch (error: unknown) {
+    recordStatusResult(id, false);
     if (error instanceof Error && error.name === "AbortError") {
-      return Response.json({ error: "timeout" }, { status: 504 });
+      return Response.json(
+        { error: "timeout", last_seen_at: server.last_seen_at, first_seen_at: server.first_seen_at },
+        { status: 504 }
+      );
     }
-    return Response.json({ error: "offline" }, { status: 502 });
+    return Response.json(
+      { error: "offline", last_seen_at: server.last_seen_at, first_seen_at: server.first_seen_at },
+      { status: 502 }
+    );
   }
 }

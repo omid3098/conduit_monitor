@@ -27,11 +27,8 @@ export function StatRow({ data, sparklineData }: StatRowProps) {
       ? (p.system_memory_used / p.system_memory_total) * 100
       : 0
   );
-  const diskSpark = sparklineData?.map((p) =>
-    data.system?.disk_total_gb
-      ? (p.system_memory_used / p.system_memory_total) * 100
-      : 0
-  );
+  // Disk sparkline data not available in metrics history (no disk fields stored)
+  const diskSpark = undefined;
 
   const totalClients = (data.connected_clients ?? 0) + (data.connecting_clients ?? 0);
   const netIn = data.system?.net_in_mbps ?? 0;

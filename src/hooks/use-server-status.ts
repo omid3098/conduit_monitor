@@ -7,7 +7,9 @@ import { POLL_INTERVAL_MS } from "@/lib/constants";
 class StatusError extends Error {
   constructor(
     public state: ServerConnectionState,
-    public statusCode: number
+    public statusCode: number,
+    public lastSeenAt?: string | null,
+    public firstSeenAt?: string | null
   ) {
     super(`Server returned ${statusCode}: ${state}`);
     this.name = "StatusError";
@@ -20,10 +22,14 @@ export function useServerStatus(serverId: string) {
     queryFn: async () => {
       const res = await fetch(`/api/servers/${serverId}/status`);
 
-      if (res.status === 401) throw new StatusError("auth_failed", 401);
-      if (res.status === 503) throw new StatusError("starting_up", 503);
-      if (res.status === 504) throw new StatusError("offline", 504);
-      if (!res.ok) throw new StatusError("offline", res.status);
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        let state: ServerConnectionState = "offline";
+        if (res.status === 401) state = "auth_failed";
+        else if (res.status === 503) state = "starting_up";
+
+        throw new StatusError(state, res.status, body.last_seen_at, body.first_seen_at);
+      }
 
       return res.json();
     },
@@ -36,10 +42,23 @@ export function useServerStatus(serverId: string) {
   });
 
   let connectionState: ServerConnectionState = "online";
+  let lastSeenAt: string | null = null;
 
   if (query.error) {
-    connectionState =
-      query.error instanceof StatusError ? query.error.state : "offline";
+    if (query.error instanceof StatusError) {
+      // Derive "never_connected" if offline and server has never been seen
+      if (
+        (query.error.state === "offline") &&
+        !query.error.firstSeenAt
+      ) {
+        connectionState = "never_connected";
+      } else {
+        connectionState = query.error.state;
+      }
+      lastSeenAt = query.error.lastSeenAt ?? null;
+    } else {
+      connectionState = "offline";
+    }
   } else if (query.data?.stale) {
     connectionState = "stale";
   }
@@ -49,5 +68,6 @@ export function useServerStatus(serverId: string) {
     connectionState,
     isLoading: query.isLoading,
     error: query.error,
+    lastSeenAt,
   };
 }

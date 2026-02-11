@@ -101,7 +101,9 @@ export function ServerCard({ server }: { server: ServerSafe }) {
                 ? "Authentication failed — check secret"
                 : connectionState === "starting_up"
                   ? "Server is starting up..."
-                  : "No data available"}
+                  : connectionState === "never_connected"
+                    ? "Never connected — verify URI"
+                    : "No data available"}
           </p>
         )}
       </CardContent>

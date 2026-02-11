@@ -67,6 +67,16 @@ export function formatCompact(num: number): string {
   return num.toString();
 }
 
+export function formatRelativeTime(isoString: string): string {
+  const seconds = Math.floor(
+    (Date.now() - new Date(isoString).getTime()) / 1000
+  );
+  if (seconds < 60) return "just now";
+  if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+  if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+  return `${Math.floor(seconds / 86400)}d ago`;
+}
+
 export function formatCountryCode(code: string): string {
   try {
     const displayNames = new Intl.DisplayNames(["en"], { type: "region" });

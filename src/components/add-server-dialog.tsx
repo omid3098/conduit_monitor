@@ -12,11 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAddServer } from "@/hooks/use-servers";
+import { TagEditor } from "@/components/tag-editor";
 
 export function AddServerDialog() {
   const [open, setOpen] = useState(false);
   const [uri, setUri] = useState("");
   const [label, setLabel] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const addServer = useAddServer();
 
@@ -30,9 +32,14 @@ export function AddServerDialog() {
     }
 
     try {
-      await addServer.mutateAsync({ uri, label: label || undefined });
+      await addServer.mutateAsync({
+        uri,
+        label: label || undefined,
+        tags: tags.length > 0 ? tags : undefined,
+      });
       setUri("");
       setLabel("");
+      setTags([]);
       setOpen(false);
     } catch (err) {
       setError(
@@ -69,6 +76,10 @@ export function AddServerDialog() {
               value={label}
               onChange={(e) => setLabel(e.target.value)}
             />
+          </div>
+          <div>
+            <Label>Tags (optional)</Label>
+            <TagEditor tags={tags} onChange={setTags} />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <Button type="submit" disabled={addServer.isPending}>

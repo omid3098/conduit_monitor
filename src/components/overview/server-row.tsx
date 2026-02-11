@@ -151,10 +151,9 @@ export function ServerRow({ server }: { server: ServerSafe }) {
     }
   }, [data]);
 
-  const dimmed =
-    connectionState !== "online" && connectionState !== "stale"
-      ? "opacity-40"
-      : "";
+  const isDown =
+    connectionState !== "online" && connectionState !== "stale";
+  const dimmed = isDown ? "opacity-40" : "";
 
   return (
     <Link href={`/servers/${server.id}`} className="block">
@@ -257,7 +256,9 @@ export function ServerRow({ server }: { server: ServerSafe }) {
                   ? "Authentication failed"
                   : connectionState === "starting_up"
                     ? "Starting up..."
-                    : "No data"}
+                    : connectionState === "never_connected"
+                      ? "Never connected"
+                      : "No data"}
             </p>
           )}
         </div>

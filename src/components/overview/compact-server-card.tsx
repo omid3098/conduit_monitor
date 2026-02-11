@@ -11,6 +11,7 @@ const statusDotColors: Record<ServerConnectionState, string> = {
   auth_failed: "bg-red-500",
   starting_up: "bg-yellow-500",
   stale: "bg-yellow-500",
+  never_connected: "bg-gray-400",
 };
 
 function MiniHealthBar({ label, percent }: { label: string; percent: number }) {
@@ -119,7 +120,9 @@ export function CompactServerCard({ server }: { server: ServerSafe }) {
                 ? "Auth failed"
                 : connectionState === "starting_up"
                   ? "Starting..."
-                  : "No data"}
+                  : connectionState === "never_connected"
+                    ? "Never connected"
+                    : "No data"}
           </p>
         )}
       </div>

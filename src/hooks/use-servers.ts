@@ -15,11 +15,23 @@ export function useServers() {
   });
 }
 
+export function useTags() {
+  return useQuery<string[]>({
+    queryKey: ["tags"],
+    queryFn: async () => {
+      const res = await fetch("/api/tags");
+      if (!res.ok) throw new Error("Failed to fetch tags");
+      return res.json();
+    },
+    staleTime: 30_000,
+  });
+}
+
 export function useAddServer() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (data: { uri: string; label?: string }) => {
+    mutationFn: async (data: { uri: string; label?: string; tags?: string[] }) => {
       const res = await fetch("/api/servers", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -33,6 +45,7 @@ export function useAddServer() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["servers"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
     },
   });
 }
@@ -56,6 +69,26 @@ export function useRenameServer() {
   });
 }
 
+export function useUpdateServerTags() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, tags }: { id: string; tags: string[] }) => {
+      const res = await fetch(`/api/servers/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tags }),
+      });
+      if (!res.ok) throw new Error("Failed to update tags");
+      return res.json() as Promise<ServerSafe>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["servers"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
+    },
+  });
+}
+
 export function useDeleteServer() {
   const queryClient = useQueryClient();
 
@@ -66,6 +99,7 @@ export function useDeleteServer() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["servers"] });
+      queryClient.invalidateQueries({ queryKey: ["tags"] });
     },
   });
 }

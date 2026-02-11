@@ -36,4 +36,41 @@ db.exec(`
     ON metrics_history (server_id, timestamp)
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS uptime_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    server_id TEXT NOT NULL,
+    event_type TEXT NOT NULL CHECK (event_type IN ('online', 'offline')),
+    timestamp INTEGER NOT NULL,
+    FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_uptime_events_server_time
+    ON uptime_events (server_id, timestamp)
+`);
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS server_tags (
+    server_id TEXT NOT NULL,
+    tag TEXT NOT NULL,
+    PRIMARY KEY (server_id, tag),
+    FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
+  )
+`);
+
+db.exec(`
+  CREATE INDEX IF NOT EXISTS idx_server_tags_tag
+    ON server_tags (tag)
+`);
+
+// Safe column additions (SQLite lacks ADD COLUMN IF NOT EXISTS)
+try {
+  db.exec("ALTER TABLE servers ADD COLUMN last_seen_at TEXT");
+} catch { /* column already exists */ }
+try {
+  db.exec("ALTER TABLE servers ADD COLUMN first_seen_at TEXT");
+} catch { /* column already exists */ }
+
 export default db;

@@ -7,6 +7,8 @@ import { useAggregatedHistory } from "@/hooks/use-aggregated-history";
 import { AggregateStats } from "@/components/overview/aggregate-stats";
 import { ServerPillBar } from "@/components/overview/server-pill-bar";
 import { CombinedCountryPanel } from "@/components/overview/combined-country-panel";
+import { WorldMapPanel } from "@/components/world-map/world-map-panel";
+import type { AgentCountryClients, AgentCountryTraffic } from "@/lib/types";
 import { TimeRangeSelector } from "@/components/server-detail/time-range-selector";
 import { ConnectionsChartPanel } from "@/components/server-detail/connections-chart-panel";
 import { NetworkChartPanel } from "@/components/server-detail/network-chart-panel";
@@ -101,7 +103,39 @@ export function OverviewDashboard() {
             <AggregateStats serversData={serversData} />
           </div>
 
-          {/* Row 3: Charts 2x2 grid — fills all remaining viewport space */}
+          {/* Row 3: World map (combined country data from all servers) */}
+          <div className="shrink-0 max-h-[35vh] overflow-hidden">
+            <WorldMapPanel
+              countries={
+                serversData.reduce<AgentCountryClients[]>((acc, s) => {
+                  if (!s.data?.clients_by_country) return acc;
+                  for (const c of s.data.clients_by_country) {
+                    const existing = acc.find((x) => x.country === c.country);
+                    if (existing) existing.connections += c.connections;
+                    else acc.push({ ...c });
+                  }
+                  return acc;
+                }, [])
+              }
+              traffic={
+                serversData.reduce<AgentCountryTraffic[]>((acc, s) => {
+                  if (!s.data?.traffic_by_country) return acc;
+                  for (const t of s.data.traffic_by_country) {
+                    const existing = acc.find((x) => x.country === t.country);
+                    if (existing) {
+                      existing.from_bytes += t.from_bytes;
+                      existing.to_bytes += t.to_bytes;
+                    } else {
+                      acc.push({ ...t });
+                    }
+                  }
+                  return acc;
+                }, [])
+              }
+            />
+          </div>
+
+          {/* Row 4: Charts 2x2 grid — fills all remaining viewport space */}
           <div className="flex-1 min-h-0 grid grid-cols-2 grid-rows-2 gap-1.5">
             <ConnectionsChartPanel history={history} compact />
             <NetworkChartPanel history={history} compact />

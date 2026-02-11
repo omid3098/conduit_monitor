@@ -16,6 +16,9 @@ import { CountryPanel } from "@/components/server-detail/country-panel";
 import { TcpStatesPanel } from "@/components/server-detail/tcp-states-panel";
 import { SessionSettingsStrip } from "@/components/server-detail/session-settings-strip";
 import { ContainerList } from "@/components/server-detail/container-list";
+import { OfflineDiagnostics } from "@/components/offline-diagnostics";
+import { UptimeSummary } from "@/components/uptime/uptime-summary";
+import { WorldMapPanel } from "@/components/world-map/world-map-panel";
 
 interface ServerDetailViewProps {
   serverId: string;
@@ -71,7 +74,7 @@ export function ServerDetailView({ serverId }: ServerDetailViewProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("1h");
 
   const serverQuery = useServer(serverId);
-  const { data: statusData, connectionState, isLoading: statusLoading } =
+  const { data: statusData, connectionState, isLoading: statusLoading, lastSeenAt } =
     useServerStatus(serverId);
   const historyQuery = useServerHistory(serverId, timeRange);
 
@@ -98,6 +101,8 @@ export function ServerDetailView({ serverId }: ServerDetailViewProps) {
     ? (Date.now() / 1000) - statusData.session.start_time
     : undefined;
 
+  const isNotOnline = connectionState !== "online";
+
   return (
     <div className="space-y-6">
       {/* 1. Header */}
@@ -107,10 +112,20 @@ export function ServerDetailView({ serverId }: ServerDetailViewProps) {
           serverId={server.server_id ?? undefined}
           connectionState={connectionState}
           sessionUptime={sessionUptime}
+          lastSeenAt={lastSeenAt}
         />
         {/* 2. Time range selector */}
         <TimeRangeSelector value={timeRange} onChange={setTimeRange} />
       </div>
+
+      {/* Offline diagnostics panel */}
+      <OfflineDiagnostics
+        connectionState={connectionState}
+        lastSeenAt={lastSeenAt}
+      />
+
+      {/* Uptime summary */}
+      <UptimeSummary serverId={serverId} />
 
       {/* 3. Stat row */}
       {statusData && (
@@ -123,21 +138,33 @@ export function ServerDetailView({ serverId }: ServerDetailViewProps) {
         settings={statusData?.settings ?? null}
       />
 
-      {/* 5. 2x2 chart grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <ConnectionsChartPanel history={history} />
-        <NetworkChartPanel history={history} />
-        <SystemChartPanel history={history} />
-        <LoadAveragePanel
-          system={statusData?.system ?? null}
-          history={history}
+      {/* 5. 2x2 chart grid (dimmed when offline) */}
+      <div className={isNotOnline && !statusData ? "opacity-40 pointer-events-none" : ""}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <ConnectionsChartPanel history={history} />
+          <NetworkChartPanel history={history} />
+          <SystemChartPanel history={history} />
+          <LoadAveragePanel
+            system={statusData?.system ?? null}
+            history={history}
+          />
+        </div>
+      </div>
+
+      {/* 6. World map */}
+      <div className={isNotOnline && !statusData ? "opacity-40 pointer-events-none" : ""}>
+        <WorldMapPanel
+          countries={statusData?.clients_by_country ?? []}
+          traffic={statusData?.traffic_by_country}
         />
       </div>
 
-      {/* 6. Country + TCP states */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <CountryPanel countries={statusData?.clients_by_country ?? []} />
-        <TcpStatesPanel connections={statusData?.connections ?? null} />
+      {/* 7. Country + TCP states */}
+      <div className={isNotOnline && !statusData ? "opacity-40 pointer-events-none" : ""}>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <CountryPanel countries={statusData?.clients_by_country ?? []} />
+          <TcpStatesPanel connections={statusData?.connections ?? null} />
+        </div>
       </div>
 
       {/* 7. Container list */}

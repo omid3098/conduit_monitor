@@ -2,6 +2,7 @@
 
 import type { ServerStatusResult, ServerConnectionState } from "@/lib/types";
 import { formatMbps, formatCpu, formatBytes, formatCompact } from "@/lib/format";
+import { useFleetUptime } from "@/hooks/use-uptime";
 
 interface ServerData {
   data: ServerStatusResult | undefined;
@@ -39,6 +40,8 @@ export function AggregateStats({
 }: {
   serversData: ServerData[];
 }) {
+  const fleetUptime = useFleetUptime("24h");
+
   const online = serversData.filter(
     (s) => s.connectionState === "online" || s.connectionState === "stale"
   );
@@ -122,6 +125,15 @@ export function AggregateStats({
         label="Containers"
         value={totalContainers.toString()}
         subtitle="running"
+      />
+      <MiniStat
+        label="Uptime"
+        value={
+          fleetUptime.data
+            ? `${fleetUptime.data.fleet_uptime_percent.toFixed(1)}%`
+            : "—"
+        }
+        subtitle="24h fleet avg"
       />
       <MiniStat
         label="Capacity"

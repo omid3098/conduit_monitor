@@ -119,6 +119,8 @@ export interface ServerRow {
   label: string | null;
   server_id: string | null;
   created_at: string;
+  last_seen_at: string | null;
+  first_seen_at: string | null;
 }
 
 // === API response types (safe for client — NO secrets, hosts, or ports) ===
@@ -128,6 +130,9 @@ export interface ServerSafe {
   label: string | null;
   server_id: string | null;
   created_at: string;
+  last_seen_at: string | null;
+  first_seen_at: string | null;
+  tags: string[];
 }
 
 export interface ServerStatusResult extends AgentStatusResponse {
@@ -141,7 +146,8 @@ export type ServerConnectionState =
   | "offline"
   | "auth_failed"
   | "starting_up"
-  | "stale";
+  | "stale"
+  | "never_connected";
 
 // === Metrics history types ===
 
@@ -171,4 +177,28 @@ export interface AggregatedHistoryResponse {
   range: string;
   data_points: number;
   history: MetricsDataPoint[];
+}
+
+// === Uptime types ===
+
+export interface DowntimeIncident {
+  start: number;
+  end: number | null;
+  duration: number;
+}
+
+export interface UptimeResponse {
+  server_id: string;
+  range: string;
+  uptime_percent: number;
+  downtime_incidents: DowntimeIncident[];
+}
+
+export interface FleetUptimeResponse {
+  range: string;
+  fleet_uptime_percent: number;
+  server_uptimes: {
+    server_id: string;
+    uptime_percent: number;
+  }[];
 }
