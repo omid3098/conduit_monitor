@@ -79,11 +79,11 @@ function makeStatus() {
     },
 
     clients_by_country: [
-      { country: "IR", connections: Math.floor(connTotal * rand(0.55, 0.70)) },
-      { country: "CN", connections: Math.floor(connTotal * rand(0.10, 0.20)) },
-      { country: "RU", connections: Math.floor(connTotal * rand(0.03, 0.08)) },
-      { country: "UA", connections: Math.floor(connTotal * rand(0.01, 0.04)) },
-      { country: "MM", connections: Math.floor(connTotal * rand(0.005, 0.02)) },
+      { country: "Iran - #FreeIran", connections: Math.floor(connTotal * rand(0.55, 0.70)) },
+      { country: "China", connections: Math.floor(connTotal * rand(0.10, 0.20)) },
+      { country: "Russia", connections: Math.floor(connTotal * rand(0.03, 0.08)) },
+      { country: "Ukraine", connections: Math.floor(connTotal * rand(0.01, 0.04)) },
+      { country: "Myanmar", connections: Math.floor(connTotal * rand(0.005, 0.02)) },
     ],
 
     containers: [
