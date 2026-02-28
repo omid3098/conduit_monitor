@@ -1,6 +1,7 @@
 "use client";
 
 import { CountryPanel } from "@/components/server-detail/country-panel";
+import { CountryListSidebar } from "@/components/overview/country-list-sidebar";
 import type {
   AgentCountryClients,
   ServerStatusResult,
@@ -13,11 +14,13 @@ interface CombinedCountryPanelProps {
     connectionState: ServerConnectionState;
   }>;
   compact?: boolean;
+  variant?: "chart" | "list";
 }
 
 export function CombinedCountryPanel({
   serversData,
   compact,
+  variant = "chart",
 }: CombinedCountryPanelProps) {
   const countryMap = new Map<string, number>();
   for (const server of serversData) {
@@ -37,6 +40,10 @@ export function CombinedCountryPanel({
   const merged: AgentCountryClients[] = Array.from(countryMap.entries())
     .map(([country, connections]) => ({ country, connections }))
     .sort((a, b) => b.connections - a.connections);
+
+  if (variant === "list") {
+    return <CountryListSidebar countries={merged} />;
+  }
 
   return <CountryPanel countries={merged} compact={compact} />;
 }

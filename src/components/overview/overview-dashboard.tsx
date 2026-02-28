@@ -57,8 +57,12 @@ export function OverviewDashboard() {
           <Skeleton className="h-6 w-40 rounded-md" />
         </div>
         <Skeleton className="h-11 rounded-lg shrink-0" />
-        <div className="flex-1 min-h-0 grid grid-cols-2 grid-rows-2 gap-1.5">
-          {[1, 2, 3, 4].map((i) => (
+        <div className="shrink-0 max-h-[35vh] flex gap-1.5">
+          <Skeleton className="flex-1 min-w-0 rounded-lg h-[30vh]" />
+          <Skeleton className="w-[30%] min-w-[200px] max-w-[320px] rounded-lg h-[30vh]" />
+        </div>
+        <div className="flex-1 min-h-0 grid grid-cols-3 gap-1.5">
+          {[1, 2, 3].map((i) => (
             <Skeleton key={i} className="rounded-lg" />
           ))}
         </div>
@@ -103,44 +107,48 @@ export function OverviewDashboard() {
             <AggregateStats serversData={serversData} />
           </div>
 
-          {/* Row 3: World map (combined country data from all servers) */}
-          <div className="shrink-0 max-h-[35vh] overflow-hidden">
-            <WorldMapPanel
-              countries={
-                serversData.reduce<AgentCountryClients[]>((acc, s) => {
-                  if (!s.data?.clients_by_country) return acc;
-                  for (const c of s.data.clients_by_country) {
-                    const existing = acc.find((x) => x.country === c.country);
-                    if (existing) existing.connections += c.connections;
-                    else acc.push({ ...c });
-                  }
-                  return acc;
-                }, [])
-              }
-              traffic={
-                serversData.reduce<AgentCountryTraffic[]>((acc, s) => {
-                  if (!s.data?.traffic_by_country) return acc;
-                  for (const t of s.data.traffic_by_country) {
-                    const existing = acc.find((x) => x.country === t.country);
-                    if (existing) {
-                      existing.from_bytes += t.from_bytes;
-                      existing.to_bytes += t.to_bytes;
-                    } else {
-                      acc.push({ ...t });
+          {/* Row 3: World map (left) + Country list sidebar (right) */}
+          <div className="shrink-0 max-h-[35vh] flex gap-1.5">
+            <div className="flex-1 min-w-0 overflow-hidden">
+              <WorldMapPanel
+                countries={
+                  serversData.reduce<AgentCountryClients[]>((acc, s) => {
+                    if (!s.data?.clients_by_country) return acc;
+                    for (const c of s.data.clients_by_country) {
+                      const existing = acc.find((x) => x.country === c.country);
+                      if (existing) existing.connections += c.connections;
+                      else acc.push({ ...c });
                     }
-                  }
-                  return acc;
-                }, [])
-              }
-            />
+                    return acc;
+                  }, [])
+                }
+                traffic={
+                  serversData.reduce<AgentCountryTraffic[]>((acc, s) => {
+                    if (!s.data?.traffic_by_country) return acc;
+                    for (const t of s.data.traffic_by_country) {
+                      const existing = acc.find((x) => x.country === t.country);
+                      if (existing) {
+                        existing.from_bytes += t.from_bytes;
+                        existing.to_bytes += t.to_bytes;
+                      } else {
+                        acc.push({ ...t });
+                      }
+                    }
+                    return acc;
+                  }, [])
+                }
+              />
+            </div>
+            <div className="w-[30%] min-w-[200px] max-w-[320px]">
+              <CombinedCountryPanel serversData={serversData} variant="list" />
+            </div>
           </div>
 
-          {/* Row 4: Charts 2x2 grid — fills all remaining viewport space */}
-          <div className="flex-1 min-h-0 grid grid-cols-2 grid-rows-2 gap-1.5">
+          {/* Row 4: 3 time-series charts in a single row */}
+          <div className="flex-1 min-h-0 grid grid-cols-3 gap-1.5">
             <ConnectionsChartPanel history={history} compact />
             <NetworkChartPanel history={history} compact />
             <SystemChartPanel history={history} compact />
-            <CombinedCountryPanel serversData={serversData} compact />
           </div>
         </div>
       )}

@@ -2,6 +2,7 @@
 
 import { WorldMap } from "@/components/world-map/world-map";
 import { mergeCountryData } from "@/lib/country-data";
+import { cn } from "@/lib/utils";
 import type { AgentCountryClients, AgentCountryTraffic } from "@/lib/types";
 
 interface WorldMapPanelProps {
@@ -19,7 +20,7 @@ export function WorldMapPanel({
 
   return (
     <div
-      className={`rounded-xl border bg-card/50 p-4 ${className ?? ""}`}
+      className={cn("rounded-xl border bg-card/50 p-4 h-full", className)}
     >
       <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
         Client Map
@@ -27,7 +28,7 @@ export function WorldMapPanel({
       {data.length > 0 ? (
         <WorldMap data={data} />
       ) : (
-        <div className="flex items-center justify-center h-48 text-sm text-muted-foreground">
+        <div className="flex items-center justify-center flex-1 text-sm text-muted-foreground">
           No country data available
         </div>
       )}
